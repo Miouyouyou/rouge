@@ -81,7 +81,7 @@ module Rouge
         end
         rule /(\n|\r|\r\n)/, Text::Whitespace
         mixin :whitespace
-        rule /(\S+).*\n/ do |m|
+        rule /(\S+).*/ do |m|
           # FIXME: I just want to check the first group of THIS REGEXP !
           #        If the assembly parser recognises the mnemonic THEN pass the
           #        whole line to the assembly parser !
@@ -100,6 +100,11 @@ module Rouge
 
       # Classes ! EVERYWHERE !
       class Directive < RegexLexer
+
+        def lex(stream, opts = {}, &b)
+          $stderr.puts "[Directive] stream: #{stream}, opts: #{opts}, b: #{b.inspect}"
+          super(stream, opts, &b)
+        end
         state :root do
           rule %r<(;|//).*>, Comment::Single
           rule /[ \t]+/, Text::Whitespace
@@ -143,6 +148,7 @@ module Rouge
 
       module AssemblyLexer
         def recognise?(token)
+          p token
           mnemonics.include? token
         end
       end
@@ -158,7 +164,7 @@ module Rouge
 
           def self.mnemonics
             @@mnemonics ||= ::Set.new(::YAML.load(File.read(
-              Pathname.new(__FILE__).dirname.join('arm/armv7_instructions.yaml')
+              Pathname.new(__FILE__).dirname.join('arm/armv7_instructions.yml')
             )))
           end
 
